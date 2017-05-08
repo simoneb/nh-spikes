@@ -11,5 +11,7 @@ namespace nh_spikes.Mappings
             Map(x => x.FirstName);
             Map(x => x.LastName);
             References(x => x.Store);
+            OptimisticLock.All();
+            DynamicUpdate();
         }
     }}

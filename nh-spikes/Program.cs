@@ -1,5 +1,5 @@
 ﻿using System;
-using Nancy.Hosting.Self;
+using Microsoft.Owin.Hosting;
 
 namespace nh_spikes
 {
@@ -7,10 +7,12 @@ namespace nh_spikes
     {
         public static void Main(string[] args)
         {
-            using (var host = new NancyHost(new Uri("http://localhost:1234")))
+            var url = "http://+:1234";
+
+            using (WebApp.Start<Startup>(url))
             {
-                host.Start();
-                Console.WriteLine("Running on http://localhost:1234");
+                Console.WriteLine("Running on {0}", url);
+                Console.WriteLine("Press enter to exit");
                 Console.ReadLine();
             }
         }

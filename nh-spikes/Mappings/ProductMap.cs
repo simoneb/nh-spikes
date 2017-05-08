@@ -14,7 +14,8 @@ namespace nh_spikes.Mappings
                 .Cascade.All()
                 .Inverse()
                 .Table("StoreProduct");
-//            Version(p => p.Version);
-//            DynamicUpdate();
+            Version(p => p.Version);
+            OptimisticLock.Version();
+            DynamicUpdate();
         }
     }}

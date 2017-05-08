@@ -1,11 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
 using AutoMapper;
+using AutoMapper.Attributes;
 using FluentNHibernate.Cfg;
 using FluentNHibernate.Cfg.Db;
+using HibernatingRhinos.Profiler.Appender.NHibernate;
 using nh_spikes.Dtos;
 using nh_spikes.Entities;
 using Nancy;
 using Nancy.Bootstrapper;
+using Nancy.Conventions;
 using Nancy.TinyIoc;
 using NHibernate;
 using NHibernate.Cfg;
@@ -15,6 +20,12 @@ namespace nh_spikes
 {
     public class Bootstrapper : DefaultNancyBootstrapper
     {
+        protected override void ConfigureConventions(NancyConventions conventions)
+        {
+            base.ConfigureConventions(conventions);
+            conventions.StaticContentsConventions.AddDirectory("/scripts", "Scripts");
+        }
+
         private static ISessionFactory SessionFactory;
 
         protected override void ApplicationStartup(TinyIoCContainer container, IPipelines pipelines)
@@ -23,11 +34,10 @@ namespace nh_spikes
 
             Mapper.Initialize(c =>
             {
-                c.CreateMap<Store, StoreDto>();
-                c.CreateMap<Employee, EmployeeDto>();
+                Assembly.GetExecutingAssembly().MapTypes(c);
             });
 
-            HibernatingRhinos.Profiler.Appender.NHibernate.NHibernateProfiler.Initialize();
+            NHibernateProfiler.Initialize();
             CreateSessionFactory();
             CreateData();
         }
@@ -40,7 +50,12 @@ namespace nh_spikes
 
         private static Action<NancyContext> CloseSession(TinyIoCContainer container)
         {
-            return ctx => container.Resolve<ISession>().Close();
+            return ctx =>
+            {
+                var session = container.Resolve<ISession>();
+                session.Flush();
+                session.Close();
+            };
         }
 
         private static void CreateSessionFactory()
